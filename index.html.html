@@ -1,0 +1,1430 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>행운 시뮬레이터</title>
+
+  <style>
+
+    body{
+
+      margin:0;
+
+      min-height:100vh;
+
+      font-family:sans-serif;
+
+      background:
+      linear-gradient(to bottom,#eef7ea,#dcefd7);
+
+      display:flex;
+
+      justify-content:center;
+
+      overflow:auto;
+    }
+
+    body::before{
+
+      content:"🍀 🍀 🍀 🍀 🍀";
+
+      position:fixed;
+
+      inset:0;
+
+      font-size:40px;
+
+      color:rgba(120,190,120,0.08);
+
+      letter-spacing:40px;
+
+      line-height:140px;
+
+      transform:rotate(-10deg);
+
+      pointer-events:none;
+    }
+
+    .container{
+
+      width:90%;
+
+      max-width:500px;
+
+
+      border-radius:28px;
+
+      padding:28px;
+
+      box-shadow:
+      0 10px 30px rgba(0,0,0,0.12);
+
+      position:relative;
+    }
+
+    .title{
+
+      text-align:center;
+
+      font-size:40px;
+
+      color:#b08b4f;
+
+      font-weight:bold;
+
+      margin-bottom:10px;
+    }
+
+    .subtitle{
+
+      text-align:center;
+
+      color:#7a725f;
+
+      margin-bottom:24px;
+    }
+
+  .button-grid{
+  position:fixed;
+  left:24px;
+  top:20;
+
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  width:100px;
+  z-index:50;
+}
+
+    button{
+
+      padding:10px;
+
+      border:none;
+
+      border-radius:12px;
+
+      font-size:13px;
+
+      font-weight:bold;
+
+      cursor:pointer;
+
+      background:
+      linear-gradient(
+      to bottom,
+      #ecd9a6,
+      #d6b777);
+
+      color:#4b3f2a;
+
+    .button-grid button{
+
+  transition:
+  background 0.15s ease,
+  box-shadow 0.15s ease,
+  filter 0.15s ease;
+}
+    }
+
+  .board{
+
+  position:relative;
+
+  width:500px;
+
+  height:650px;
+
+  overflow:hidden;
+
+  margin:0;
+
+  border-radius:0px;
+
+
+  background-image:
+  url("images/janggi-board.png");
+
+  background-size:100% 100%;
+
+  background-position:center;
+
+  background-repeat:no-repeat;
+
+display:block;
+margin:auto;
+background-color:transparent;
+
+border:2px solid #ffd86d;
+box-shadow:0 0 20px #ffd86b;
+}
+
+   .piece{
+  position:absolute;
+  transition : left 0.18s ease, top 0.18s ease, transform 0.15s ease;
+
+  width:40x;
+  height:40px;
+
+  background:transparent;
+  border : none;
+
+  border-radius:50%;
+
+  display:flex;
+  justify-content:center;
+  align-items:center;
+
+  font-weight:bold;
+  color: gold;
+
+  border:2px solid #b5a422;
+
+  z-index:10;
+}
+
+.green{
+  background:rgba(120,190,120,0.9);
+}
+
+    .warning{
+  margin-top:18px;
+  text-align:center;
+  color:red;
+  font-size:18px;
+  font-weight:bold;
+  min-height:28px;
+}
+
+.piece img{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+}
+
+.my-piece{
+
+  position:absolute;
+
+}
+
+.my-piece img{
+
+  width:70px;
+  height:70px;
+  box-shadow:none;
+  border:none;
+  position:absolute;
+  z-index:2;
+}
+
+.my-piece.my-turn-glow::before{
+
+  content:"";
+
+  position:absolute;
+
+  left:50%;
+  top:50%;
+
+  width:52px;
+  height:52px;
+
+  transform:translate(-50%, -50%);
+
+  border-radius:50%;
+
+  border:2px solid gold;
+
+  box-shadow:
+  0 0 12px gold;
+
+  z-index:1;
+}
+.enemy-piece{
+  width:50px;
+  height:50px;
+  background : transparent;
+  border:none;
+}
+
+.piece-btn.selected{
+
+  transform:scale(1.08);
+
+  box-shadow:
+  0 0 18px rgba(255,215,100,0.95);
+
+  border:3px solid gold;
+
+  background:
+  linear-gradient(to bottom,#fff1b8,#e2bb58);
+}
+
+.selected-piece{
+
+  border-radius:50%;
+
+ box-shadow:
+0 0 10px gold,
+0 0 20px orange,
+0 0 30px gold;
+
+  transform:scale(1);
+
+  z-index:15;
+}
+
+.move-spot{
+  display:block !important;
+  position:absolute !important;
+
+  width:20px !important;
+  height:20px !important;
+
+  border-radius:50% !important;
+
+  background:transparent !important;
+
+  border:3px solid gold !important;
+
+  box-shadow:
+  0 0 12px gold !important;
+
+  pointer-events:none !important;
+
+  z-index:999 !important;
+}
+
+.attack-spot{
+
+  position:absolute;
+
+  width:20px;
+  height:20px;
+
+  border-radius:50%;
+
+  background:rgba(255,80,80,0.9);
+
+  pointer-events:none;
+
+  box-shadow:
+  0 0 12px red;
+}
+
+#turn-display{
+
+  text-align:center;
+
+  font-size:20px;
+
+  font-weight:bold;
+
+  color:#6b552d;
+
+  margin-bottom:16px;
+}
+#analysis-result{
+  margin-top:14px;
+  padding:14px;
+  border-radius:16px;
+  background:rgba(255,255,255,0.8);
+  color:#4b3f2a;
+  font-weight:bold;
+  text-align:center;
+  min-height:24px;
+}
+.danger-spot{
+
+  position:absolute;
+
+  width:28px;
+  height:28px;
+
+  border-radius:50%;
+
+  background:rgba(189, 9, 9, 0.615);
+
+  border:2px solid rgba(255,0,0,0.7);
+
+  pointer-events:none;
+
+  z-index:5;
+}
+.recommend-spot{
+  position:absolute;
+  width:34px;
+  height:34px;
+  border-radius:50%;
+  box-shadow:0 0 18px #00ff99;
+  pointer-events:none;
+  z-index:6;
+}
+
+.game-layout{
+  position:relative;
+  width:100%;
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+}
+
+.button-grid{
+  position:fixed !important;
+  left:24px !important;
+  top:20px !important;
+  z-index:999 !important;
+
+  display:flex !important;
+  flex-direction:column !important;
+  gap:8px !important;
+  width:100px !important;
+
+  max-height:none !important;
+  overflow:visible !important;
+}
+
+.button-grid{
+  pointer-events:auto !important;
+  z-index:9999 !important;
+}
+
+.button-grid button{
+  pointer-events:auto !important;
+  position:relative !important;
+  z-index:10000 !important;
+}
+
+.board{
+  z-index:1 !important;
+}
+
+.attack-target{
+  filter:
+  drop-shadow(0 0 10px red)
+  drop-shadow(0 0 22px red) !important;
+
+  transform:scale(1.08) !important;
+
+  z-index:30 !important;
+}
+
+  </style>
+
+</head>
+
+<body>
+
+  <div class="container">
+
+    <div class="title">
+      🍀 장기 시뮬레이터
+    </div>
+
+    <div class="subtitle">
+      말을 배치해보세요.
+    </div>
+
+    <div id="turn-display">
+      현재 턴 : 우리
+    </div>
+
+<div
+    class="warning"
+    id="warning">
+
+    </div>
+<div id="analysis-result"></div>
+<div class = "game-layout">  
+<div class="button-grid">
+
+<button class="piece-btn" onclick="addPiece('우리 차 🚗', this)">우리 차 🚗</button>
+<button class="piece-btn" onclick="addPiece('상대 졸', this)">상대 졸</button>
+<button class="piece-btn" onclick="addPiece('상대 사', this)">상대 사</button>
+<button class="piece-btn" onclick="addPiece('상대 상', this)">상대 상</button>
+<button class="piece-btn" onclick="addPiece('상대 포', this)">상대 포</button>
+<button class="piece-btn" onclick="addPiece('상대 마', this)">상대 마</button>
+<button class="piece-btn" onclick="addPiece('상대 차', this)">상대 차</button>
+<button class="piece-btn" onclick="addPiece('상대 장', this)">상대 장</button>
+
+  <button onclick="analyzeBoard()">추천 배치 분석</button>
+  <button onclick="showDangerZones()">위험 칸 보기</button>
+  <button onclick="recommendMove()">추천 수 AI</button>
+  <button onclick="undoPiece()">Undo</button>
+  <button onclick="resetBoard()">Reset</button>
+  <button onclick="saveBoard()">저장</button>
+
+<button onclick="loadBoard()">불러오기</button>
+</div>
+
+    <div class="board" id="board" onclick="placePiece(event)">
+
+    <div id="move-spots"></div>
+
+  </div>
+
+
+<script>
+  const pieceImages = {
+  "우리 차 🚗": "images/my-cha.png",
+  "상대 졸": "images/enemy-jol.png",
+  "상대 사": "images/enemy-sa.png",
+  "상대 상": "images/enemy-sang.png",
+  "상대 포": "images/enemy-po.png",
+  "상대 마": "images/enemy-ma.png",
+  "상대 장": "images/enemy-jang.png",
+  "상대 차": "images/enemy-cha.png"
+  };
+let selectedPiece = "우리 차 🚗";
+let selectedPieceElement = null;
+let validMoves = [];
+let mode = "place";
+let currentTurn = "my";
+let gameOver = false;
+
+const cellX = 64;
+const cellY = 56;
+const startX = 25;
+const startY = 170;
+
+
+function addPiece(piece, button){
+
+  if(gameOver){
+    showWarning("게임이 종료되었습니다.")
+    return;
+  }
+
+  const isMyPiece =
+  piece === "우리 차 🚗";
+
+  if(currentTurn === "my" && !isMyPiece){
+    showWarning("우리 턴입니다! 상대 말은 배치할 수 없어요.");
+    return;
+  }
+
+  if(currentTurn === "enemy" && isMyPiece){
+    showWarning("상대 턴입니다! 우리 차는 배치할 수 없어요.");
+    return;
+  }
+
+  selectedPiece = piece;
+  mode = "place";
+
+  const buttons = document.querySelectorAll(".piece-btn");
+  buttons.forEach(btn => btn.classList.remove("selected"));
+
+  button.classList.add("selected");
+  showWarning(piece + " 배치 모드입니다.");
+}
+
+function showWarning(text){
+  document.getElementById("warning").innerText = text;
+}
+
+function updateTurnDisplay(){
+  document.getElementById("turn-display").innerText =
+  currentTurn === "my" ? "현재 턴 : 우리" : "현재 턴 : 상대";
+}
+function updateTurnGlow(){
+
+  const myPieces =
+  document.querySelectorAll(".my-piece");
+
+  myPieces.forEach(piece => {
+
+    if(currentTurn === "my"){
+      piece.classList.add("my-turn-glow");
+    } else {
+      piece.classList.remove("my-turn-glow");
+    }
+
+  });
+}
+function changeTurn(){
+
+  currentTurn =
+  currentTurn === "my"
+  ? "enemy"
+  : "my";
+
+  selectedPiece = null;
+
+  document
+  .querySelectorAll(".piece-btn")
+  .forEach(btn =>
+    btn.classList.remove("selected")
+  );
+
+  updateTurnDisplay();
+  updateTurnGlow();
+
+  showWarning(
+    currentTurn === "my"
+    ? "우리 턴입니다!"
+    : "상대 턴입니다!"
+  );
+}
+
+function getSnapPosition(event){
+  const board = document.getElementById("board");
+  const rect = board.getBoundingClientRect();
+
+  const x = event.clientX - rect.left;
+  const y = event.clientY - rect.top;
+
+  const snapX = startX + Math.round((x - startX) / cellX) * cellX;
+  const snapY = startY + Math.round((y - startY) / cellY) * cellY;
+
+  return { snapX, snapY };
+}
+
+function placePiece(event){
+  if(gameOver){
+    showWarning("게임이 종료되었습니다.");
+    return;
+  }
+  if(!selectedPiece){
+  showWarning("배치할 말을 먼저 선택해주세요!");
+  return;
+}
+  const board = document.getElementById("board");
+  const { snapX, snapY } = getSnapPosition(event);
+
+  if(mode === "move" && selectedPieceElement){
+    const canMove = validMoves.some(move =>
+  samePosition(move.x, move.y, snapX, snapY)
+);
+
+    if(!canMove){
+      showWarning("⚠️ 이동할 수 없는 칸입니다!");
+      return;
+    }
+
+    const targetPiece = Array.from(board.querySelectorAll(".piece"))
+    .find(p =>
+      p !== selectedPieceElement &&
+      parseInt(p.dataset.x) === snapX &&
+      parseInt(p.dataset.y) === snapY
+    );
+
+    if(targetPiece){
+      targetPiece.remove();
+    }
+
+    moveSelectedPiece(snapX, snapY);
+
+    selectedPieceElement.classList.remove("selected-piece");
+    clearMoveSpots();
+
+    selectedPieceElement = null;
+    mode = "place";
+
+    showWarning("이동 완료!");
+    changeTurn();
+    return;
+  }
+
+  const existingPieces = board.querySelectorAll(".piece");
+
+  for(let existing of existingPieces){
+    if(
+      existing.dataset.x === String(snapX) &&
+      existing.dataset.y === String(snapY)
+    ){
+      showWarning("⚠️ 이미 말이 있는 위치입니다!");
+      return;
+    }
+  }
+
+  const piece = document.createElement("div");
+
+  piece.dataset.x = snapX;
+  piece.dataset.y = snapY;
+  piece.dataset.type = selectedPiece;
+
+if(selectedPiece === "우리 차 🚗"){
+  piece.className = "piece my-piece";
+} else {
+  piece.className = "piece enemy-piece";
+}
+
+if(pieceImages[selectedPiece]){
+  piece.innerHTML = `<img src="${pieceImages[selectedPiece]}">`;
+} else {
+  piece.innerText = selectedPiece.replace("상대 ", "");
+}
+
+  function centerPiece(piece, snapX, snapY){
+
+  const offsetX = 0;
+  const offsetY = 0;
+
+  piece.style.left =
+  (snapX - piece.offsetWidth / 2 + offsetX) + "px";
+
+  piece.style.top =
+  (snapY - piece.offsetHeight / 2 + offsetY) + "px";
+}
+
+  piece.onclick = function(event){
+    event.stopPropagation();
+    const isMyPiece =
+piece.classList.contains("my-piece");
+
+if(mode !== "move"){
+
+  if(currentTurn === "my" && !isMyPiece){
+    showWarning("우리 턴입니다! 우리 차만 움직일 수 있어요.");
+    clearMoveSpots();
+    clearDangerSpots();
+    clearRecommendSpots();
+    return;
+  }
+
+  if(currentTurn === "enemy" && isMyPiece){
+    showWarning("상대 턴입니다! 상대 말만 움직일 수 있어요.");
+    clearMoveSpots();
+    clearDangerSpots();
+    clearRecommendSpots();
+    return;
+  }
+}
+
+    if(mode === "move" && selectedPieceElement && piece !== selectedPieceElement){
+      const targetX = parseInt(piece.dataset.x);
+      const targetY = parseInt(piece.dataset.y);
+
+      const canMove = validMoves.some(move =>
+  samePosition(move.x, move.y, targetX, targetY)
+);
+
+      if(!canMove){
+        showWarning("⚠️ 이동할 수 없는 칸입니다!");
+        return;
+      }
+
+      if(piece.classList.contains("my-piece")){
+
+  gameOver = true;
+
+  piece.remove();
+
+  clearMoveSpots();
+  clearDangerSpots();
+  clearRecommendSpots();
+
+  showWarning("💀 패배! 우리 차가 잡혔습니다.");
+
+  selectedPieceElement.classList.remove("selected-piece");
+
+  selectedPieceElement = null;
+  mode = "place";
+
+  return;
+}
+      
+      piece.remove();
+      moveSelectedPiece(targetX, targetY);
+
+      selectedPieceElement.classList.remove("selected-piece");
+      clearMoveSpots();
+
+      selectedPieceElement = null;
+      mode = "place";
+
+      showWarning("상대 말을 잡았습니다!");
+      changeTurn();
+      return;
+    }
+
+    mode = "move";
+    selectedPieceElement = piece;
+
+    document.querySelectorAll(".piece").forEach(p => {
+      p.classList.remove("selected-piece");
+    });
+
+    piece.classList.add("selected-piece");
+    showMoveSpots(piece);
+
+    showWarning("선택됨! 이동할 칸을 눌러주세요.");
+  };
+
+  board.appendChild(piece);
+  centerPiece(piece, snapX, snapY);
+  showWarning("");
+}
+
+function centerPiece(piece, snapX, snapY){
+
+  let offsetX = -18;
+  let offsetY = -8;
+
+  const type = piece.dataset.type;
+
+  if(type === "우리 차 🚗"){offsetY = 5;}
+  if(type === "우리 차 🚗"){offsetX = -11;}
+
+  if(type === "상대 졸"){offsetY = 0;}
+  if(type === "상대 졸"){offsetX = -11;}
+
+  if(type === "상대 사"){offsetY = -2;}
+  if(type === "상대 사"){offsetX = -11;}
+
+  if(type === "상대 상"){offsetY = -2;}
+  if(type === "상대 상"){offsetX = -10;}
+
+  if(type === "상대 포"){offsetY = -4;}
+  if(type === "상대 포"){offsetX = -11;}
+
+  if(type === "상대 마"){offsetY = 0;}
+  if(type === "상대 마"){offsetX = -15;}
+
+  if(type === "상대 차"){offsetY = 0;}
+  if(type === "상대 차"){offsetX = -11;}
+
+  if(type === "상대 장"){offsetY = 0;}
+  if(type === "상대 장"){offsetX = -10;}
+
+  piece.style.left =
+  (snapX - piece.offsetWidth / 2 + offsetX) + "px";
+
+  piece.style.top =
+  (snapY - piece.offsetHeight / 2 + offsetY) + "px";
+}
+
+function moveSelectedPiece(snapX, snapY){
+  selectedPieceElement.dataset.x = snapX;
+  selectedPieceElement.dataset.y = snapY;
+  centerPiece(selectedPieceElement, snapX, snapY);
+}
+
+function undoPiece(){
+  const board = document.getElementById("board");
+  const pieces = board.querySelectorAll(".piece");
+
+  if(pieces.length > 0){
+    pieces[pieces.length - 1].remove();
+  }
+
+  clearMoveSpots();
+  selectedPieceElement = null;
+  mode = "place";
+  showWarning("");
+}
+
+function resetBoard(){
+  const board = document.getElementById("board");
+  const pieces = board.querySelectorAll(".piece");
+
+  pieces.forEach(piece => piece.remove());
+
+  clearMoveSpots();
+  clearDangerSpots();
+
+  selectedPieceElement = null;
+  mode = "place";
+  currentTurn = "my";
+  gameOver = false;
+  updateTurnDisplay();
+  showWarning("");
+}
+
+function showMoveSpots(piece){
+  clearMoveSpots();
+
+  const board = document.getElementById("board");
+  const x = parseInt(piece.dataset.x);
+  const y = parseInt(piece.dataset.y);
+  const type = piece.dataset.type;
+
+  validMoves = [];
+
+  if(type === "우리 차 🚗" || type === "상대 차"){
+
+    const directions = [
+      {dx:cellX, dy:0},
+      {dx:-cellX, dy:0},
+      {dx:0, dy:cellY},
+      {dx:0, dy:-cellY}
+    ];
+
+    directions.forEach(dir => {
+      for(let i=1; i<=8; i++){
+        const moveX = x + dir.dx * i;
+        const moveY = y + dir.dy * i;
+
+        const blockingPiece = Array.from(board.querySelectorAll(".piece"))
+        .find(p =>
+          samePosition(p.dataset.x, p.dataset.y, moveX, moveY)
+        );
+
+        if(blockingPiece){
+          if(!isSameTeam(piece, blockingPiece)){
+            validMoves.push({x:moveX, y:moveY});
+          }
+          break;
+        }
+
+        validMoves.push({x:moveX, y:moveY});
+      }
+    });
+  }
+
+  else if(type === "상대 졸" || type === "상대 장"){
+    validMoves.push({x:x, y:y+cellY});
+    validMoves.push({x:x, y:y-cellY});
+    validMoves.push({x:x+cellX, y:y});
+    validMoves.push({x:x-cellX, y:y});
+  }
+
+  else if(type === "상대 사"){
+    validMoves.push({x:x+cellX, y:y+cellY});
+    validMoves.push({x:x-cellX, y:y+cellY});
+    validMoves.push({x:x+cellX, y:y-cellY});
+    validMoves.push({x:x-cellX, y:y-cellY});
+  }
+
+  else if(type === "상대 상"){
+    validMoves.push({x:x+cellX*2, y:y+cellY*2});
+    validMoves.push({x:x-cellX*2, y:y+cellY*2});
+    validMoves.push({x:x+cellX*2, y:y-cellY*2});
+    validMoves.push({x:x-cellX*2, y:y-cellY*2});
+  }
+
+  else if(type === "상대 마"){
+
+  const horseMoves = [
+    // 오른쪽 1칸 직진 후, 위/아래 대각선
+    {legX:x+cellX, legY:y, moveX:x+cellX*2, moveY:y+cellY},
+    {legX:x+cellX, legY:y, moveX:x+cellX*2, moveY:y-cellY},
+
+    // 왼쪽 1칸 직진 후, 위/아래 대각선
+    {legX:x-cellX, legY:y, moveX:x-cellX*2, moveY:y+cellY},
+    {legX:x-cellX, legY:y, moveX:x-cellX*2, moveY:y-cellY},
+
+    // 아래 1칸 직진 후, 좌/우 대각선
+    {legX:x, legY:y+cellY, moveX:x+cellX, moveY:y+cellY*2},
+    {legX:x, legY:y+cellY, moveX:x-cellX, moveY:y+cellY*2},
+
+    // 위 1칸 직진 후, 좌/우 대각선
+    {legX:x, legY:y-cellY, moveX:x+cellX, moveY:y-cellY*2},
+    {legX:x, legY:y-cellY, moveX:x-cellX, moveY:y-cellY*2}
+  ];
+
+  horseMoves.forEach(move => {
+
+    const blocked = Array.from(board.querySelectorAll(".piece"))
+    .find(p =>
+      parseInt(p.dataset.x) === move.legX &&
+      parseInt(p.dataset.y) === move.legY
+    );
+
+    if(!blocked){
+      validMoves.push({
+        x:move.moveX,
+        y:move.moveY
+      });
+    }
+
+  });
+}
+
+  else if(type === "상대 포"){
+
+    const directions = [
+      {dx:cellX, dy:0},
+      {dx:-cellX, dy:0},
+      {dx:0, dy:cellY},
+      {dx:0, dy:-cellY}
+    ];
+
+    directions.forEach(dir => {
+      let jumped = false;
+
+      for(let i=1; i<=8; i++){
+        const moveX = x + dir.dx * i;
+        const moveY = y + dir.dy * i;
+
+        const blockingPiece = Array.from(board.querySelectorAll(".piece"))
+        .find(p =>
+          Math.abs(parseInt(p.dataset.x) - moveX) < 2 &&
+          Math.abs(parseInt(p.dataset.y) - moveY) < 2
+        );
+
+        if(!jumped){
+          if(blockingPiece){
+            jumped = true;
+          }
+          continue;
+        }
+
+        if(blockingPiece){
+          if(!isSameTeam(piece, blockingPiece)){
+            validMoves.push({x:moveX, y:moveY});
+          }
+          break;
+        }
+
+        validMoves.push({x:moveX, y:moveY});
+      }
+    });
+  }
+
+  else{
+    validMoves.push({x:x, y:y+cellY});
+    validMoves.push({x:x, y:y-cellY});
+    validMoves.push({x:x+cellX, y:y});
+    validMoves.push({x:x-cellX, y:y});
+  }
+
+  drawMoveSpots(piece);
+}
+
+function drawMoveSpots(piece){
+
+  const board = document.getElementById("board");
+  const existingPieces = board.querySelectorAll(".piece");
+
+  validMoves.forEach(move => {
+
+    let blocked = false;
+    let attack = false;
+
+    existingPieces.forEach(existing => {
+
+      const ex = Number(existing.dataset.x);
+      const ey = Number(existing.dataset.y);
+
+      if(samePosition(ex, ey, move.x, move.y)){
+
+        if(isSameTeam(piece, existing)){
+          blocked = true;
+        } else {
+          attack = true;
+          existing.classList.add("attack-target");
+        }
+
+      }
+
+    });
+
+    if(blocked) return;
+
+    const spot = document.createElement("div");
+
+    spot.className = attack ? "attack-spot" : "move-spot";
+
+    spot.style.left = (move.x - 13.5) + "px";
+    spot.style.top = (move.y - 2) + "px";
+
+    board.appendChild(spot);
+
+  });
+}
+  const board = document.getElementById("board");
+  const existingPieces = board.querySelectorAll(".piece");
+
+  validMoves.forEach(move => {
+    let blocked = false;
+    let attack = false;
+
+    existingPieces.forEach(existing => {
+      const ex = parseInt(existing.dataset.x);
+      const ey = parseInt(existing.dataset.y);
+
+     if(samePosition(ex, ey, move.x, move.y)){
+  if(isSameTeam(piece, existing)){
+    blocked = true;
+  } else {
+    attack = true;
+    existing.classList.add("attack-target");
+  }
+}
+    });
+
+    if(blocked) return;
+  });
+
+function isSameTeam(a, b){
+  return (
+    a.classList.contains("my-piece") &&
+    b.classList.contains("my-piece")
+  ) || (
+    a.classList.contains("enemy-piece") &&
+    b.classList.contains("enemy-piece")
+  );
+}
+
+function clearMoveSpots(){
+  document
+  .querySelectorAll(".move-spot, .attack-spot")
+  .forEach(spot => spot.remove());
+  clearAttackTargets();
+
+}
+
+function clearDangerSpots(){
+  document
+  .querySelectorAll(".danger-spot")
+  .forEach(spot => spot.remove());
+}
+
+function analyzeBoard(){
+  const board = document.getElementById("board");
+  const myPieces = board.querySelectorAll(".my-piece");
+  const enemyPieces = board.querySelectorAll(".enemy-piece");
+
+  if(myPieces.length === 0){
+    showWarning("⚠️ 우리 차를 먼저 배치해주세요!");
+    return;
+  }
+
+  if(enemyPieces.length === 0){
+    showWarning("⚠️ 상대 말을 배치해야 분석할 수 있어요!");
+    return;
+  }
+
+  document.getElementById("analysis-result").innerText =
+  "✨ 분석 완료! 현재 배치는 테스트 가능한 상태예요.";
+}
+
+window.showDangerZones = function(){
+  clearDangerSpots();
+
+  const board = document.getElementById("board");
+  const enemyPieces = board.querySelectorAll(".enemy-piece");
+
+  enemyPieces.forEach(piece => {
+    const x = parseInt(piece.dataset.x);
+    const y = parseInt(piece.dataset.y);
+
+    const dangerMoves = [
+      {x:x+cellX, y:y},
+      {x:x-cellX, y:y},
+      {x:x, y:y+cellY},
+      {x:x, y:y-cellY}
+    ];
+
+    dangerMoves.forEach(move => {
+      const spot = document.createElement("div");
+
+      spot.className = "danger-spot";
+      spot.style.left = (move.x -10) + "px";
+      spot.style.top = (move.y -10) + "px";
+
+      board.appendChild(spot);
+    });
+  });
+
+  showWarning("⚠️ 위험 칸 표시 완료!");
+}
+
+function recommendMove(){
+
+  if(gameOver){
+    showWarning("게임이 종료되었습니다.");
+    return;
+  }
+
+  clearRecommendSpots();
+  clearMoveSpots();
+
+  const board = document.getElementById("board");
+  const myPiece = board.querySelector(".my-piece");
+
+  if(!myPiece){
+    showWarning("⚠️ 우리 차를 먼저 배치해주세요!");
+    return;
+  }
+
+  if(currentTurn !== "my"){
+    showWarning("우리 턴일 때만 추천 수를 볼 수 있어요.");
+    return;
+  }
+
+  showMoveSpots(myPiece);
+
+  if(validMoves.length === 0){
+    showWarning("추천할 수 있는 이동 칸이 없어요.");
+    return;
+  }
+
+  let bestMove = null;
+  let bestScore = -999;
+  let bestReason = "";
+
+  validMoves.forEach(move => {
+
+    let score = 0;
+    let reasons = [];
+
+    const targetEnemy = Array.from(board.querySelectorAll(".enemy-piece"))
+    .find(enemy =>
+      samePosition(enemy.dataset.x, enemy.dataset.y, move.x, move.y)
+    );
+
+    if(targetEnemy){
+      score += 30;
+      reasons.push("상대 말을 잡을 수 있음");
+    }
+
+    const enemies = board.querySelectorAll(".enemy-piece");
+
+    enemies.forEach(enemy => {
+      const enemyX = Number(enemy.dataset.x);
+      const enemyY = Number(enemy.dataset.y);
+      const enemyType = enemy.dataset.type;
+
+      if(samePosition(move.x, move.y, enemyX, enemyY)){
+        return;
+      }
+
+      const sameRow = Math.abs(move.y - enemyY) < 5;
+      const sameCol = Math.abs(move.x - enemyX) < 5;
+
+      if(sameRow || sameCol){
+        score += 8;
+        reasons.push(enemyType + "와 같은 줄 압박 가능");
+      }
+
+      const distance =
+      Math.abs(move.x - enemyX) +
+      Math.abs(move.y - enemyY);
+
+      if(distance <= Math.max(cellX, cellY) * 2){
+        score += 4;
+        reasons.push(enemyType + " 가까이 압박 가능");
+      }
+    });
+
+    const dangerScore = getDangerScoreForMove(move.x, move.y);
+
+    if(dangerScore > 0){
+      score -= dangerScore;
+      reasons.push("상대 공격 위험 있음");
+    }
+
+    if(score > bestScore){
+      bestScore = score;
+      bestMove = move;
+      bestReason = reasons.join(", ");
+    }
+  });
+
+  clearMoveSpots();
+
+  if(!bestMove){
+    showWarning("추천할 수 있는 수가 없어요.");
+    return;
+  }
+
+  const spot = document.createElement("div");
+  spot.className = "recommend-spot";
+
+  spot.style.left = (bestMove.x - 17 - 14) + "px";
+  spot.style.top = (bestMove.y - 17 + 8) + "px";
+
+  board.appendChild(spot);
+
+  if(bestReason === ""){
+    bestReason = "가장 무난한 이동 위치";
+  }
+
+  showWarning("🤖 추천 수: " + bestReason);
+}
+
+function getDangerScoreForMove(testX, testY){
+
+  const board = document.getElementById("board");
+  const enemyPieces = board.querySelectorAll(".enemy-piece");
+
+  let dangerScore = 0;
+
+  enemyPieces.forEach(enemy => {
+
+    const enemyX = Number(enemy.dataset.x);
+    const enemyY = Number(enemy.dataset.y);
+    const type = enemy.dataset.type;
+
+    if(type === "상대 차"){
+
+      const sameRow = Math.abs(enemyY - testY) < 5;
+      const sameCol = Math.abs(enemyX - testX) < 5;
+
+      if(sameRow || sameCol){
+        dangerScore += 15;
+      }
+    }
+
+    if(type === "상대 졸" || type === "상대 장"){
+
+      const possibleMoves = [
+        {x:enemyX, y:enemyY + cellY},
+        {x:enemyX, y:enemyY - cellY},
+        {x:enemyX + cellX, y:enemyY},
+        {x:enemyX - cellX, y:enemyY}
+      ];
+
+      possibleMoves.forEach(move => {
+        if(samePosition(move.x, move.y, testX, testY)){
+          dangerScore += 10;
+        }
+      });
+    }
+
+    if(type === "상대 마"){
+
+      const possibleMoves = [
+        {x:enemyX + cellX * 2, y:enemyY + cellY},
+        {x:enemyX + cellX * 2, y:enemyY - cellY},
+        {x:enemyX - cellX * 2, y:enemyY + cellY},
+        {x:enemyX - cellX * 2, y:enemyY - cellY},
+        {x:enemyX + cellX, y:enemyY + cellY * 2},
+        {x:enemyX - cellX, y:enemyY + cellY * 2},
+        {x:enemyX + cellX, y:enemyY - cellY * 2},
+        {x:enemyX - cellX, y:enemyY - cellY * 2}
+      ];
+
+      possibleMoves.forEach(move => {
+        if(samePosition(move.x, move.y, testX, testY)){
+          dangerScore += 12;
+        }
+      });
+    }
+  });
+
+  return dangerScore;
+}
+
+function clearRecommendSpots(){
+  document
+  .querySelectorAll(".recommend-spot")
+  .forEach(spot => spot.remove());
+}
+
+function undoPiece(){
+  const board = document.getElementById("board");
+  const pieces = board.querySelectorAll(".piece");
+
+  if(pieces.length > 0){
+    pieces[pieces.length - 1].remove();
+    showWarning("↩️ 마지막 말을 되돌렸어요!");
+  } else {
+    showWarning("되돌릴 수 있는 말이 없어요!");
+  }
+
+  clearMoveSpots();
+  clearDangerSpots();
+  clearRecommendSpots();
+
+  selectedPieceElement = null;
+  mode = "place";
+}
+
+function resetBoard(){
+
+  const board =
+  document.getElementById("board");
+
+  board
+  .querySelectorAll(".piece, .move-spot, .attack-spot, .danger-spot, .recommend-spot")
+  .forEach(el => el.remove());
+
+  selectedPieceElement = null;
+  selectedPiece = null;
+  mode = "place";
+  currentTurn = "my";
+
+  updateTurnDisplay();
+
+  document
+  .querySelectorAll(".piece-btn")
+  .forEach(btn => btn.classList.remove("selected"));
+
+  showWarning("🔄 장기판 초기화 완료!");
+}
+
+function samePosition(aX, aY, bX, bY){
+  return (
+    Math.abs(Number(aX) - Number(bX)) < 2 &&
+    Math.abs(Number(aY) - Number(bY)) < 2
+  );
+}
+function clearAttackTargets(){
+  document
+  .querySelectorAll(".attack-target")
+  .forEach(piece => piece.classList.remove("attack-target"));
+}
+function saveBoard(){
+
+  const board = document.getElementById("board");
+  const pieces = board.querySelectorAll(".piece");
+
+  const saveData = [];
+
+  pieces.forEach(piece => {
+    saveData.push({
+      type: piece.dataset.type,
+      x: piece.dataset.x,
+      y: piece.dataset.y,
+      team: piece.classList.contains("my-piece") ? "my" : "enemy"
+    });
+  });
+
+  localStorage.setItem("janggiSaveData", JSON.stringify(saveData));
+
+  showWarning("💾 저장 완료!");
+}
+function loadBoard(){
+
+  const saved =
+  localStorage.getItem("janggiSaveData");
+
+  if(!saved){
+    showWarning("불러올 저장 데이터가 없어요!");
+    return;
+  }
+
+  resetBoard();
+
+  const board = document.getElementById("board");
+  const saveData = JSON.parse(saved);
+
+  saveData.forEach(data => {
+
+    const piece = document.createElement("div");
+
+    piece.dataset.type = data.type;
+    piece.dataset.x = data.x;
+    piece.dataset.y = data.y;
+
+    if(data.team === "my"){
+      piece.className = "piece my-piece";
+    } else {
+      piece.className = "piece enemy-piece";
+    }
+
+    if(pieceImages[data.type]){
+      piece.innerHTML = `<img src="${pieceImages[data.type]}">`;
+    } else {
+      piece.innerText = data.type.replace("상대 ", "");
+    }
+
+    piece.onclick = function(event){
+      event.stopPropagation();
+      showWarning("불러온 말은 새로 배치한 말처럼 이동 가능하게 다시 연결해야 해요.");
+    };
+
+    board.appendChild(piece);
+    centerPiece(piece, Number(data.x), Number(data.y));
+  });
+
+  showWarning("📂 불러오기 완료!");
+}
+</script>
+
+</body>
+</html>
